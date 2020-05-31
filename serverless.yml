@@ -1,0 +1,24 @@
+service: nohtaray-sample-app
+
+plugins:
+#  - serverless-webpack
+  - serverless-dotenv-plugin
+
+provider:
+  name: aws
+  runtime: nodejs12.x
+  region: ap-northeast-1
+  stage: dev
+  environment:
+    SHOPIFY_API_KEY: ${env:SHOPIFY_API_KEY}
+    SHOPIFY_API_SECRET: ${env:SHOPIFY_API_SECRET}
+    SCOPES: ${env:SCOPES}
+    SHOP: ${env:SHOP}
+    NODE_ENV: production
+
+functions:
+  app:
+    handler: dist/lambda.handler
+    events:
+      - http: ANY /
+      - http: 'ANY {proxy+}'
