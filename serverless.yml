@@ -1,4 +1,4 @@
-service: nohtaray-sample-app
+service: nohtaray-sample-app2
 
 plugins:
   - serverless-dotenv-plugin
@@ -26,13 +26,11 @@ functions:
           method: get
           path: /_next/{proxy+}
     package:
-      include:
-        - ../.next/**
+      exclude:
+        - .git/**
 
 custom:
   customDomain:
-    domainName: shopify-${self:provider.stage}1.nohtaray.com
+    domainName: shopify-${self:provider.stage}2.nohtaray.com
     stage: ${self:provider.stage}
     endpointType: regional
-    certificateArn: arn:aws:acm:us-east-1:930038210242:certificate/80057b1a-c098-457d-ac7a-8410c0d26dbc
-    certificateName: '*.nohtaray.com'
