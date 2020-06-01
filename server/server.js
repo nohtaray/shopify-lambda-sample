@@ -24,7 +24,6 @@ function createServer() {
   const server = new Koa();
   server.proxy = true;
   const router = new Router();
-  router.prefix("/dev");
   // server.use(awsServerlessExpressMiddleware.eventContext());
   // // FIXME: https://github.com/awslabs/aws-serverless-express#getting-the-api-gateway-event-object
   // router.get('/', (req, res)=>{
@@ -68,9 +67,10 @@ function createServer() {
       version: ApiVersion.October19,
     })
   );
+  // router.prefix("/dev");
   router.get(
     "*",
-    verifyRequest({ authRoute: "/dev/auth", fallbackRoute: "/dev/auth" }),
+    verifyRequest({ authRoute: "/auth", fallbackRoute: "/auth" }),
     async (ctx) => {
       await handle(ctx.req, ctx.res);
       ctx.respond = false;
