@@ -1,13 +1,13 @@
 service: nohtaray-sample-app
 
 plugins:
-#  - serverless-webpack
   - serverless-dotenv-plugin
+  - serverless-domain-manager
 
 provider:
   name: aws
   runtime: nodejs12.x
-  region: ap-northeast-1
+  region: us-east-1
   stage: dev
   environment:
     SHOPIFY_API_KEY: ${env:SHOPIFY_API_KEY}
@@ -29,3 +29,11 @@ functions:
       include:
         - ../.next/**
         - ../static/**
+
+custom:
+  customDomain:
+    domainName: shopify-${self:provider.stage}1.nohtaray.com
+    stage: ${self:provider.stage}
+    endpointType: regional
+    certificateArn: arn:aws:acm:us-east-1:930038210242:certificate/80057b1a-c098-457d-ac7a-8410c0d26dbc
+    certificateName: '*.nohtaray.com'

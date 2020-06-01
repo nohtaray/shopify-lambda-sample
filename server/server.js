@@ -25,6 +25,7 @@ function createServer() {
   server.proxy = true;
   const router = new Router();
   // server.use(awsServerlessExpressMiddleware.eventContext());
+
   // // FIXME: https://github.com/awslabs/aws-serverless-express#getting-the-api-gateway-event-object
   // router.get('/', (req, res)=>{
   //   res.json(req.apiGateway.event);
