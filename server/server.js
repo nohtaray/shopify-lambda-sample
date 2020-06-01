@@ -8,22 +8,37 @@ import next from "next";
 import Router from "koa-router";
 import session from "koa-session";
 import * as handlers from "./handlers/index";
+
+const awsServerlessExpressMiddleware = require("aws-serverless-express/middleware");
+
 dotenv.config();
 const port = parseInt(process.env.PORT, 10) || 8081;
 const dev = process.env.NODE_ENV !== "production";
 const app = next({
-  dev
+  dev,
 });
 const handle = app.getRequestHandler();
 const { SHOPIFY_API_SECRET, SHOPIFY_API_KEY, SCOPES } = process.env;
-app.prepare().then(() => {
+
+function createServer() {
   const server = new Koa();
+  server.proxy = true;
   const router = new Router();
+  router.prefix("/dev");
+  // server.use(awsServerlessExpressMiddleware.eventContext());
+  // // FIXME: https://github.com/awslabs/aws-serverless-express#getting-the-api-gateway-event-object
+  // router.get('/', (req, res)=>{
+  //   res.json(req.apiGateway.event);
+  // });
+  // server.use(router.allowedMethods());
+  // server.use(router.routes());
+  // return server;
+
   server.use(
     session(
       {
         sameSite: "none",
-        secure: true
+        secure: true,
       },
       server
     )
@@ -42,27 +57,40 @@ app.prepare().then(() => {
         ctx.cookies.set("shopOrigin", shop, {
           httpOnly: false,
           secure: true,
-          sameSite: "none"
+          sameSite: "none",
         });
         ctx.redirect("/");
-      }
+      },
     })
   );
   server.use(
     graphQLProxy({
-      version: ApiVersion.October19
+      version: ApiVersion.October19,
     })
   );
-  router.get("*", verifyRequest(), async ctx => {
-    await handle(ctx.req, ctx.res);
-    ctx.respond = false;
-    ctx.res.statusCode = 200;
-  });
+  router.get(
+    "*",
+    verifyRequest({ authRoute: "/dev/auth", fallbackRoute: "/dev/auth" }),
+    async (ctx) => {
+      await handle(ctx.req, ctx.res);
+      ctx.respond = false;
+      ctx.res.statusCode = 200;
+    }
+  );
   server.use(router.allowedMethods());
   server.use(router.routes());
-  server.listen(port, () => {
-    console.log(`> Ready on http://localhost:${port}`);
-  });
-});
+  return server;
+}
 
-module.exports = app;
+// https://github.com/vercel/next.js/issues/1406#issuecomment-315517536
+// if (process.env.IN_LAMBDA) {
+if (true) {
+  module.exports = createServer();
+} else {
+  app.prepare().then(() => {
+    const server = createServer();
+    server.listen(port, () => {
+      console.log(`> Ready on http://localhost:${port}`);
+    });
+  });
+}

@@ -22,3 +22,10 @@ functions:
     events:
       - http: ANY /
       - http: 'ANY {proxy+}'
+      - http:
+          method: get
+          path: /_next/{proxy+}
+    package:
+      include:
+        - ../.next/**
+        - ../static/**
