@@ -28,7 +28,6 @@ functions:
     package:
       include:
         - ../.next/**
-        - ../static/**
 
 custom:
   customDomain:

@@ -9,8 +9,6 @@ import Router from "koa-router";
 import session from "koa-session";
 import * as handlers from "./handlers/index";
 
-const awsServerlessExpressMiddleware = require("aws-serverless-express/middleware");
-
 dotenv.config();
 const port = parseInt(process.env.PORT, 10) || 8081;
 const dev = process.env.NODE_ENV !== "production";
@@ -22,17 +20,8 @@ const { SHOPIFY_API_SECRET, SHOPIFY_API_KEY, SCOPES } = process.env;
 
 function createServer() {
   const server = new Koa();
-  server.proxy = true;
   const router = new Router();
-  // server.use(awsServerlessExpressMiddleware.eventContext());
-
-  // // FIXME: https://github.com/awslabs/aws-serverless-express#getting-the-api-gateway-event-object
-  // router.get('/', (req, res)=>{
-  //   res.json(req.apiGateway.event);
-  // });
-  // server.use(router.allowedMethods());
-  // server.use(router.routes());
-  // return server;
+  server.proxy = true;
 
   server.use(
     session(
