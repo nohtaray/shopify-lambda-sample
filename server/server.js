@@ -16,7 +16,7 @@ const app = next({
   dev,
 });
 const handle = app.getRequestHandler();
-const { SHOPIFY_API_SECRET, SHOPIFY_API_KEY, SCOPES } = process.env;
+const { SHOPIFY_API_SECRET, SHOPIFY_API_KEY, SCOPES, IN_LAMBDA } = process.env;
 
 function createServer() {
   const server = new Koa();
@@ -73,8 +73,7 @@ function createServer() {
 }
 
 // https://github.com/vercel/next.js/issues/1406#issuecomment-315517536
-// if (process.env.IN_LAMBDA) {
-if (true) {
+if (IN_LAMBDA) {
   module.exports = createServer();
 } else {
   app.prepare().then(() => {
