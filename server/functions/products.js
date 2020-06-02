@@ -1,9 +1,11 @@
-const AWS = require("aws-sdk");
+const dev = process.env.NODE_ENV !== "production";
+const XRayWrapper = dev
+  ? require("aws-xray-sdk-core").captureAWS
+  : (sdk) => sdk;
+const AWS = XRayWrapper(require("aws-sdk"));
 const dynamo = new AWS.DynamoDB.DocumentClient({
   region: "us-east-1",
 });
-
-const dev = process.env.NODE_ENV !== "production";
 
 exports.getHandler = (event, context, callback) => {
   console.log("event:", event);

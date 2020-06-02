@@ -3,11 +3,13 @@ service: nohtaray-sample-app
 plugins:
   - serverless-dotenv-plugin
   - serverless-domain-manager
+  - serverless-plugin-tracing
 
 provider:
   name: aws
   runtime: nodejs12.x
   region: us-east-1
+  tracing: true
   stage: dev
   environment:
     SHOPIFY_API_KEY: ${env:SHOPIFY_API_KEY}
@@ -19,6 +21,8 @@ provider:
     - Effect: Allow
       Resource: "*"
       Action:
+        - xray:PutTraceSegments
+        - xray:PutTelemetryRecords
         - dynamodb:Query
         - dynamodb:Scan
         - dynamodb:GetItem
@@ -37,6 +41,7 @@ functions:
     package:
       exclude:
         - .git/**
+  # TODO: Caching https://www.serverless.com/plugins/serverless-api-gateway-caching/
   getShopProducts:
     handler: server/functions/products.getHandler
     events:
