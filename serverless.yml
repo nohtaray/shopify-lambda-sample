@@ -38,7 +38,7 @@ functions:
       exclude:
         - .git/**
   getShopProducts:
-    handler: server/functions/getShopProducts.handler
+    handler: server/functions/products.getHandler
     events:
       - http:
           method: get
@@ -49,7 +49,7 @@ functions:
                 shop: true
   # TODO: 認証
   putShopProduct:
-    handler: server/functions/putShopProduct.handler
+    handler: server/functions/products.putHandler
     events:
       - http:
           method: post
@@ -60,7 +60,7 @@ functions:
                 shop: true
                 product_id: true
   deleteShopProduct:
-    handler: server/functions/deleteShopProduct.handler
+    handler: server/functions/products.deleteHandler
     events:
       - http:
           method: post
