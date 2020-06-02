@@ -8,22 +8,26 @@ import next from "next";
 import Router from "koa-router";
 import session from "koa-session";
 import * as handlers from "./handlers/index";
+
 dotenv.config();
 const port = parseInt(process.env.PORT, 10) || 8081;
 const dev = process.env.NODE_ENV !== "production";
 const app = next({
-  dev
+  dev,
 });
 const handle = app.getRequestHandler();
-const { SHOPIFY_API_SECRET, SHOPIFY_API_KEY, SCOPES } = process.env;
-app.prepare().then(() => {
+const { SHOPIFY_API_SECRET, SHOPIFY_API_KEY, SCOPES, IN_LAMBDA } = process.env;
+
+function createServer() {
   const server = new Koa();
   const router = new Router();
+  server.proxy = true;
+
   server.use(
     session(
       {
         sameSite: "none",
-        secure: true
+        secure: true,
       },
       server
     )
@@ -42,25 +46,40 @@ app.prepare().then(() => {
         ctx.cookies.set("shopOrigin", shop, {
           httpOnly: false,
           secure: true,
-          sameSite: "none"
+          sameSite: "none",
         });
         ctx.redirect("/");
-      }
+      },
     })
   );
   server.use(
     graphQLProxy({
-      version: ApiVersion.October19
+      version: ApiVersion.October19,
     })
   );
-  router.get("*", verifyRequest(), async ctx => {
-    await handle(ctx.req, ctx.res);
-    ctx.respond = false;
-    ctx.res.statusCode = 200;
-  });
+  // router.prefix("/dev");
+  router.get(
+    "*",
+    verifyRequest({ authRoute: "/auth", fallbackRoute: "/auth" }),
+    async (ctx) => {
+      await handle(ctx.req, ctx.res);
+      ctx.respond = false;
+      ctx.res.statusCode = 200;
+    }
+  );
   server.use(router.allowedMethods());
   server.use(router.routes());
-  server.listen(port, () => {
-    console.log(`> Ready on http://localhost:${port}`);
+  return server;
+}
+
+// https://github.com/vercel/next.js/issues/1406#issuecomment-315517536
+if (IN_LAMBDA) {
+  module.exports = createServer();
+} else {
+  app.prepare().then(() => {
+    const server = createServer();
+    server.listen(port, () => {
+      console.log(`> Ready on http://localhost:${port}`);
+    });
   });
-});
+}
