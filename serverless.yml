@@ -17,16 +17,19 @@ provider:
     NODE_ENV: production
   iamRoleStatements:
     - Effect: Allow
-      Resource: "arn:aws:dynamodb:us-east-1:*:*"
+      Resource: "*"
       Action:
-        - "dynamodb:*"
+        - dynamodb:Query
+        - dynamodb:Scan
+        - dynamodb:GetItem
+        - dynamodb:PutItem
 
 functions:
   app:
     handler: dist/lambda.handler
     events:
       - http: ANY /
-      - http: 'ANY {proxy+}'
+      - http: "ANY {proxy+}"
       - http:
           method: get
           path: /_next/{proxy+}
@@ -35,6 +38,35 @@ functions:
         - .git/**
   getShopProducts:
     handler: server/functions/getShopProducts.handler
+    events:
+      - http:
+          method: get
+          path: /api/{shop}/products
+          request:
+            parameters:
+              paths:
+                shop: true
+  # TODO: 認証
+  putShopProduct:
+    handler: server/functions/putShopProduct.handler
+    events:
+      - http:
+          method: post
+          path: /api/{shop}/putProduct
+          request:
+            parameters:
+              paths:
+                shop: true
+#  deleteShopProduct:
+#    handler: server/functions/deleteShopProduct.handler
+#    events:
+#      - http:
+#          method: post
+#          path: /api/{shop}/deleteProduct
+#          request:
+#            parameters:
+#              paths:
+#                shop: true
 
 custom:
   customDomain:
