@@ -52,21 +52,23 @@ functions:
     events:
       - http:
           method: post
-          path: /api/{shop}/putProduct
+          path: /api/{shop}/products/{product_id}/put
           request:
             parameters:
               paths:
                 shop: true
+                product_id: true
 #  deleteShopProduct:
 #    handler: server/functions/deleteShopProduct.handler
 #    events:
 #      - http:
 #          method: post
-#          path: /api/{shop}/deleteProduct
+#          path: /api/{shop}/products/{product_id}/delete
 #          request:
 #            parameters:
 #              paths:
 #                shop: true
+#                product_id: true
 
 custom:
   customDomain:

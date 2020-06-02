@@ -7,8 +7,7 @@ exports.handler = (event, context, callback) => {
   console.log("event:", event);
   // TODO: validation
   const shop = event.pathParameters.shop;
-  const requestBody = JSON.parse(event.body);
-  const productId = requestBody.product_id;
+  const productId = event.pathParameters.product_id;
   const now = Math.floor(Date.now() / 1000);
   dynamo.put(
     {
