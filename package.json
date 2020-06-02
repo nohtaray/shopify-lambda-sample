@@ -30,6 +30,7 @@
     "@shopify/polaris": "^4.13.0",
     "@zeit/next-css": "^1.0.1",
     "apollo-boost": "^0.4.4",
+    "aws-sdk": "^2.687.0",
     "aws-serverless-express": "^3.3.8",
     "dotenv": "^8.2.0",
     "graphql": "^14.5.8",

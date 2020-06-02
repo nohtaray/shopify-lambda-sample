@@ -15,6 +15,11 @@ provider:
     SCOPES: ${env:SCOPES}
     IN_LAMBDA: true
     NODE_ENV: production
+  iamRoleStatements:
+    - Effect: Allow
+      Resource: "arn:aws:dynamodb:us-east-1:*:*"
+      Action:
+        - "dynamodb:*"
 
 functions:
   app:
@@ -28,9 +33,11 @@ functions:
     package:
       exclude:
         - .git/**
+  getShopProducts:
+    handler: server/functions/getShopProducts.handler
 
 custom:
   customDomain:
-    domainName: ${self:provider.stage}.${env:DOMAIN_NAME}
+    domainName: ${self:provider.stage}-${self:service}.${env:DOMAIN_NAME}
     stage: ${self:provider.stage}
     endpointType: regional
