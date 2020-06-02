@@ -14,7 +14,7 @@ provider:
     SHOPIFY_API_SECRET: ${env:SHOPIFY_API_SECRET}
     SCOPES: ${env:SCOPES}
     IN_LAMBDA: true
-    NODE_ENV: production
+    NODE_ENV: development
   iamRoleStatements:
     - Effect: Allow
       Resource: "*"
@@ -23,6 +23,7 @@ provider:
         - dynamodb:Scan
         - dynamodb:GetItem
         - dynamodb:PutItem
+        - dynamodb:DeleteItem
 
 functions:
   app:
@@ -58,17 +59,17 @@ functions:
               paths:
                 shop: true
                 product_id: true
-#  deleteShopProduct:
-#    handler: server/functions/deleteShopProduct.handler
-#    events:
-#      - http:
-#          method: post
-#          path: /api/{shop}/products/{product_id}/delete
-#          request:
-#            parameters:
-#              paths:
-#                shop: true
-#                product_id: true
+  deleteShopProduct:
+    handler: server/functions/deleteShopProduct.handler
+    events:
+      - http:
+          method: post
+          path: /api/{shop}/products/{product_id}/delete
+          request:
+            parameters:
+              paths:
+                shop: true
+                product_id: true
 
 custom:
   customDomain:

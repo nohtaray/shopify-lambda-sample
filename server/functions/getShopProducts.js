@@ -2,6 +2,7 @@ const AWS = require("aws-sdk");
 const dynamo = new AWS.DynamoDB.DocumentClient({
   region: "us-east-1",
 });
+const dev = process.env.NODE_ENV !== "production";
 
 exports.handler = (event, context, callback) => {
   console.log("event:", event);
@@ -19,7 +20,7 @@ exports.handler = (event, context, callback) => {
   dynamo.query(queryParams, (err, data) => {
     if (err) {
       console.log("error:", err);
-      callback(new Error());
+      callback(dev ? new Error(err) : new Error());
       return;
     }
     const productIds = data.Items.map((item) => item.product_id);
