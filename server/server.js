@@ -8,6 +8,7 @@ import next from "next";
 import Router from "koa-router";
 import session from "koa-session";
 import * as handlers from "./handlers/index";
+import * as productsApi from "./api/products";
 
 dotenv.config();
 const { SHOPIFY_API_SECRET, SHOPIFY_API_KEY, SCOPES, IN_LAMBDA } = process.env;
@@ -19,18 +20,45 @@ const handle = app.getRequestHandler();
 
 function defineApiRoutes(publicRouter, privateRouter) {
   publicRouter.get("/:shop/products", async (ctx) => {
-    // const {req, res} = ctx;
-    // await handle(ctx.req, ctx.res);
-    // await handleGet(ctx);
+    const shop = ctx.params.shop;
+    const result = await productsApi.getProducts(ctx, shop);
+    // TODO: 共通化
+    // https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html#api-gateway-simple-proxy-for-lambda-output-format
+    ctx.body = {
+      statusCode: 200,
+      body: {
+        message: "OK",
+        data: result,
+      },
+    };
   });
 
-  privateRouter.post("/products/:product_id/put", async (ctx) => {
-    // ショップはこれで取れる
-    console.log(ctx.session.shop);
-    console.log("post!");
+  privateRouter.post("/products/:productId/put", async (ctx) => {
+    // 認証が通っていればセッションに shop が入る
+    // https://shopify.dev/tutorials/get-and-store-the-shop-origin#getting-and-storing-the-shop-origin
+    const shop = ctx.session.shop;
+    const productId = parseInt(ctx.params.productId, 10);
+    const result = await productsApi.putProduct(ctx, shop, productId);
+    ctx.body = {
+      statusCode: 200,
+      body: {
+        message: "OK",
+        data: result,
+      },
+    };
   });
-  privateRouter.post("/products/:product_id/delete", async (ctx) => {
-    // TODO: ハンドラを呼ぶ
+
+  privateRouter.post("/products/:productId/delete", async (ctx) => {
+    const shop = ctx.session.shop;
+    const productId = parseInt(ctx.params.productId, 10);
+    const result = await productsApi.deleteProduct(ctx, shop, productId);
+    ctx.body = {
+      statusCode: 200,
+      body: {
+        message: "OK",
+        data: result,
+      },
+    };
   });
 }
 
@@ -77,16 +105,17 @@ function createServer() {
   const publicApiRouter = new Router();
   const privateApiRouter = new Router();
   defineApiRoutes(publicApiRouter, privateApiRouter);
+  // public を先にマッチさせないと認証が走っちゃう
+  router.use(
+    "/api",
+    publicApiRouter.routes(),
+    publicApiRouter.allowedMethods()
+  );
   router.use(
     "/api",
     verifyRequest(),
     privateApiRouter.routes(),
     privateApiRouter.allowedMethods()
-  );
-  router.use(
-    "/api",
-    publicApiRouter.routes(),
-    publicApiRouter.allowedMethods()
   );
 
   router.get("*", verifyRequest(), async (ctx) => {

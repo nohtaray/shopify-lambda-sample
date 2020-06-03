@@ -45,40 +45,40 @@ functions:
     package:
       exclude:
         - .git/**
-  # TODO: Caching https://www.serverless.com/plugins/serverless-api-gateway-caching/
-  getShopProducts:
-    handler: server/functions/products.getHandler
-    events:
-      - http:
-          method: get
-          path: /api/{shop}/products
-          request:
-            parameters:
-              paths:
-                shop: true
-  # TODO: 認証
-  putShopProduct:
-    handler: server/functions/products.putHandler
-    events:
-      - http:
-          method: post
-          path: /api/{shop}/products/{product_id}/put
-          request:
-            parameters:
-              paths:
-                shop: true
-                product_id: true
-  deleteShopProduct:
-    handler: server/functions/products.deleteHandler
-    events:
-      - http:
-          method: post
-          path: /api/{shop}/products/{product_id}/delete
-          request:
-            parameters:
-              paths:
-                shop: true
-                product_id: true
+#  # TODO: Caching https://www.serverless.com/plugins/serverless-api-gateway-caching/
+#  getShopProducts:
+#    handler: server/functions/products.getHandler
+#    events:
+#      - http:
+#          method: get
+#          path: /api/{shop}/products
+#          request:
+#            parameters:
+#              paths:
+#                shop: true
+#  # TODO: 認証
+#  putShopProduct:
+#    handler: server/functions/products.putHandler
+#    events:
+#      - http:
+#          method: post
+#          path: /api/{shop}/products/{product_id}/put
+#          request:
+#            parameters:
+#              paths:
+#                shop: true
+#                product_id: true
+#  deleteShopProduct:
+#    handler: server/functions/products.deleteHandler
+#    events:
+#      - http:
+#          method: post
+#          path: /api/{shop}/products/{product_id}/delete
+#          request:
+#            parameters:
+#              paths:
+#                shop: true
+#                product_id: true
 
 custom:
   customDomain:
