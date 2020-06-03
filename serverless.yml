@@ -3,34 +3,66 @@ service: nohtaray-sample-app
 plugins:
   - serverless-dotenv-plugin
   - serverless-domain-manager
+  - serverless-plugin-tracing
+  - serverless-api-gateway-caching
 
 provider:
   name: aws
   runtime: nodejs12.x
   region: us-east-1
+  tracing: true
   stage: dev
+  logRetentionInDays: 30
   environment:
     SHOPIFY_API_KEY: ${env:SHOPIFY_API_KEY}
     SHOPIFY_API_SECRET: ${env:SHOPIFY_API_SECRET}
     SCOPES: ${env:SCOPES}
     IN_LAMBDA: true
-    NODE_ENV: production
+    NODE_ENV: development
+  iamRoleStatements:
+    - Effect: Allow
+      Resource: "*"
+      Action:
+        - xray:PutTraceSegments
+        - xray:PutTelemetryRecords
+        - dynamodb:Query
+        - dynamodb:Scan
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+        - dynamodb:DeleteItem
+        - logs:CreateLogGroup
+        - logs:CreateLogStream
+        - logs:PutLogEvents
 
 functions:
   app:
     handler: dist/lambda.handler
     events:
-      - http: ANY /
-      - http: 'ANY {proxy+}'
+      - http:
+          method: any
+          path: /
+      - http:
+          method: any
+          path: /{proxy+}
       - http:
           method: get
           path: /_next/{proxy+}
+      - http:
+          # /api/ 以下の GET をキャッシュする
+          method: get
+          path: /api/{proxy+}
+          caching:
+            enabled: true
     package:
       exclude:
         - .git/**
 
 custom:
   customDomain:
-    domainName: ${self:provider.stage}.${env:DOMAIN_NAME}
+    domainName: ${self:provider.stage}-${self:service}.${env:DOMAIN_NAME}
     stage: ${self:provider.stage}
     endpointType: regional
+  apiGatewayCaching:
+    enabled: true
+    clusterSize: 0.5  # GB
+    ttlInSeconds: 60
