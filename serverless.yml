@@ -11,6 +11,7 @@ provider:
   region: us-east-1
   tracing: true
   stage: dev
+  logRetentionInDays: 30
   environment:
     SHOPIFY_API_KEY: ${env:SHOPIFY_API_KEY}
     SHOPIFY_API_SECRET: ${env:SHOPIFY_API_SECRET}
@@ -28,6 +29,9 @@ provider:
         - dynamodb:GetItem
         - dynamodb:PutItem
         - dynamodb:DeleteItem
+        - logs:CreateLogGroup
+        - logs:CreateLogStream
+        - logs:PutLogEvents
 
 functions:
   app:
