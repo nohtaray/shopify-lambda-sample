@@ -17,6 +17,23 @@ const dev = process.env.NODE_ENV !== "production";
 const app = next({ dev: dev && !IN_LAMBDA });
 const handle = app.getRequestHandler();
 
+function defineApiRoutes(publicRouter, privateRouter) {
+  publicRouter.get("/:shop/products", async (ctx) => {
+    // const {req, res} = ctx;
+    // await handle(ctx.req, ctx.res);
+    // await handleGet(ctx);
+  });
+
+  privateRouter.post("/products/:product_id/put", async (ctx) => {
+    // ショップはこれで取れる
+    console.log(ctx.session.shop);
+    console.log("post!");
+  });
+  privateRouter.post("/products/:product_id/delete", async (ctx) => {
+    // TODO: ハンドラを呼ぶ
+  });
+}
+
 function createServer() {
   const server = new Koa();
   const router = new Router();
@@ -56,16 +73,29 @@ function createServer() {
       version: ApiVersion.October19,
     })
   );
-  // router.prefix("/dev");
-  router.get(
-    "*",
-    verifyRequest({ authRoute: "/auth", fallbackRoute: "/auth" }),
-    async (ctx) => {
-      await handle(ctx.req, ctx.res);
-      ctx.respond = false;
-      ctx.res.statusCode = 200;
-    }
+
+  const publicApiRouter = new Router();
+  const privateApiRouter = new Router();
+  defineApiRoutes(publicApiRouter, privateApiRouter);
+  router.use(
+    "/api",
+    verifyRequest(),
+    privateApiRouter.routes(),
+    privateApiRouter.allowedMethods()
   );
+  router.use(
+    "/api",
+    publicApiRouter.routes(),
+    publicApiRouter.allowedMethods()
+  );
+
+  router.get("*", verifyRequest(), async (ctx) => {
+    console.log(ctx.session.shop);
+    console.log(ctx);
+    await handle(ctx.req, ctx.res);
+    ctx.respond = false;
+    ctx.res.statusCode = 200;
+  });
   server.use(router.allowedMethods());
   server.use(router.routes());
   return server;
