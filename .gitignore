@@ -22,3 +22,5 @@ config/tunnel.pid
 
 .serverless/
 dist/
+.shopify-cli.yml
+
