@@ -12,7 +12,7 @@ import koa from "koa";
  * @param {koa.Context} ctx
  * @param {String} shop
  */
-exports.getProducts = (ctx, shop) => {
+export const getProducts = (ctx, shop) => {
   return new Promise((resolve, reject) => {
     const queryParams = {
       TableName: "pre_order_products",
@@ -41,7 +41,7 @@ exports.getProducts = (ctx, shop) => {
  * @param {String} shop
  * @param {Integer} productId
  */
-exports.putProduct = async (ctx, shop, productId) => {
+export const putProduct = async (ctx, shop, productId) => {
   return new Promise((resolve, reject) => {
     const now = Math.floor(Date.now() / 1000);
     const putParams = {
@@ -68,7 +68,7 @@ exports.putProduct = async (ctx, shop, productId) => {
  * @param {String} shop
  * @param {Integer} productId
  */
-exports.deleteProduct = async (ctx, shop, productId) => {
+export const deleteProduct = async (ctx, shop, productId) => {
   return new Promise((resolve, reject) => {
     const deleteParams = {
       TableName: "pre_order_products",

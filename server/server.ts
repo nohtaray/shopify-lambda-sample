@@ -11,15 +11,20 @@ import * as handlers from "./handlers/index";
 import * as productsApi from "./api/products";
 
 dotenv.config();
-const { SHOPIFY_API_SECRET, SHOPIFY_API_KEY, SCOPES, IN_LAMBDA } = process.env;
+const {
+  SHOPIFY_API_SECRET = "",
+  SHOPIFY_API_KEY = "",
+  SCOPES = "",
+  IN_LAMBDA = false,
+} = process.env;
 
-const port = parseInt(process.env.PORT, 10) || 8081;
+const port = parseInt(process.env.PORT || "8081", 10) || 8081;
 const dev = process.env.NODE_ENV !== "production";
 const app = next({ dev: dev && !IN_LAMBDA });
 const handle = app.getRequestHandler();
 
-function defineApiRoutes(publicRouter, privateRouter) {
-  publicRouter.get("/:shop/products", async (ctx) => {
+function defineApiRoutes(router) {
+  router.get("/api/:shop/products", async (ctx) => {
     const shop = ctx.params.shop;
     const result = await productsApi.getProducts(ctx, shop);
     // TODO: 共通化
@@ -33,7 +38,7 @@ function defineApiRoutes(publicRouter, privateRouter) {
     };
   });
 
-  privateRouter.post("/products/:productId/put", async (ctx) => {
+  router.post("/api/products/:productId/put", verifyRequest(), async (ctx) => {
     // 認証が通っていればセッションに shop が入る
     // https://shopify.dev/tutorials/get-and-store-the-shop-origin#getting-and-storing-the-shop-origin
     const shop = ctx.session.shop;
@@ -48,18 +53,22 @@ function defineApiRoutes(publicRouter, privateRouter) {
     };
   });
 
-  privateRouter.post("/products/:productId/delete", async (ctx) => {
-    const shop = ctx.session.shop;
-    const productId = parseInt(ctx.params.productId, 10);
-    const result = await productsApi.deleteProduct(ctx, shop, productId);
-    ctx.body = {
-      statusCode: 200,
-      body: {
-        message: "OK",
-        data: result,
-      },
-    };
-  });
+  router.post(
+    "/api/products/:productId/delete",
+    verifyRequest(),
+    async (ctx) => {
+      const shop = ctx.session.shop;
+      const productId = parseInt(ctx.params.productId, 10);
+      const result = await productsApi.deleteProduct(ctx, shop, productId);
+      ctx.body = {
+        statusCode: 200,
+        body: {
+          message: "OK",
+          data: result,
+        },
+      };
+    }
+  );
 }
 
 function createServer() {
@@ -84,6 +93,7 @@ function createServer() {
       scopes: [SCOPES],
 
       async afterAuth(ctx) {
+        if (ctx.session == null) return;
         //Auth token and shop available in session
         //Redirect to shop upon auth
         const { shop, accessToken } = ctx.session;
@@ -102,25 +112,9 @@ function createServer() {
     })
   );
 
-  const publicApiRouter = new Router();
-  const privateApiRouter = new Router();
-  defineApiRoutes(publicApiRouter, privateApiRouter);
-  // public を先にマッチさせないと認証が走っちゃう
-  router.use(
-    "/api",
-    publicApiRouter.routes(),
-    publicApiRouter.allowedMethods()
-  );
-  router.use(
-    "/api",
-    verifyRequest(),
-    privateApiRouter.routes(),
-    privateApiRouter.allowedMethods()
-  );
+  defineApiRoutes(router);
 
   router.get("*", verifyRequest(), async (ctx) => {
-    console.log(ctx.session.shop);
-    console.log(ctx);
     await handle(ctx.req, ctx.res);
     ctx.respond = false;
     ctx.res.statusCode = 200;
@@ -131,13 +125,12 @@ function createServer() {
 }
 
 // https://github.com/vercel/next.js/issues/1406#issuecomment-315517536
-if (IN_LAMBDA) {
-  module.exports = createServer();
-} else {
+const server = createServer();
+if (!IN_LAMBDA) {
   app.prepare().then(() => {
-    const server = createServer();
     server.listen(port, () => {
       console.log(`> Ready on http://localhost:${port}`);
     });
   });
 }
+export default server;

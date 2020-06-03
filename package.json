@@ -6,7 +6,7 @@
     "test": "jest",
     "dev": "NODE_ENV=development nodemon",
     "build": "next build && babel server --out-dir dist --presets @babel/preset-env --ignore node_modules",
-    "start": "NODE_ENV=production node ./server/index.js"
+    "start": "NODE_ENV=production ts-node ./server/index.ts"
   },
   "repository": {
     "type": "git",
