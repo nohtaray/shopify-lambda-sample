@@ -10,13 +10,12 @@ import session from "koa-session";
 import * as handlers from "./handlers/index";
 
 dotenv.config();
+const { SHOPIFY_API_SECRET, SHOPIFY_API_KEY, SCOPES, IN_LAMBDA } = process.env;
+
 const port = parseInt(process.env.PORT, 10) || 8081;
 const dev = process.env.NODE_ENV !== "production";
-const app = next({
-  dev,
-});
+const app = next({ dev: dev && !IN_LAMBDA });
 const handle = app.getRequestHandler();
-const { SHOPIFY_API_SECRET, SHOPIFY_API_KEY, SCOPES, IN_LAMBDA } = process.env;
 
 function createServer() {
   const server = new Koa();
