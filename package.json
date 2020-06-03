@@ -62,6 +62,7 @@
     "prettier": "2.0.2",
     "react-addons-test-utils": "15.6.2",
     "react-test-renderer": "16.13.1",
+    "serverless-api-gateway-caching": "^1.4.1",
     "serverless-domain-manager": "^4.1.1",
     "serverless-dotenv-plugin": "^2.4.2",
     "serverless-plugin-tracing": "^2.0.0",

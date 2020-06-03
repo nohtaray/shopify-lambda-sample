@@ -4,6 +4,7 @@ plugins:
   - serverless-dotenv-plugin
   - serverless-domain-manager
   - serverless-plugin-tracing
+  - serverless-api-gateway-caching
 
 provider:
   name: aws
@@ -37,51 +38,31 @@ functions:
   app:
     handler: dist/lambda.handler
     events:
-      - http: ANY /
-      - http: "ANY {proxy+}"
+      - http:
+          method: any
+          path: /
+      - http:
+          method: any
+          path: /{proxy+}
       - http:
           method: get
           path: /_next/{proxy+}
+      - http:
+          # /api/ 以下の GET をキャッシュする
+          method: get
+          path: /api/{proxy+}
+          caching:
+            enabled: true
     package:
       exclude:
         - .git/**
-#  # TODO: Caching https://www.serverless.com/plugins/serverless-api-gateway-caching/
-#  getShopProducts:
-#    handler: server/functions/products.getHandler
-#    events:
-#      - http:
-#          method: get
-#          path: /api/{shop}/products
-#          request:
-#            parameters:
-#              paths:
-#                shop: true
-#  # TODO: 認証
-#  putShopProduct:
-#    handler: server/functions/products.putHandler
-#    events:
-#      - http:
-#          method: post
-#          path: /api/{shop}/products/{product_id}/put
-#          request:
-#            parameters:
-#              paths:
-#                shop: true
-#                product_id: true
-#  deleteShopProduct:
-#    handler: server/functions/products.deleteHandler
-#    events:
-#      - http:
-#          method: post
-#          path: /api/{shop}/products/{product_id}/delete
-#          request:
-#            parameters:
-#              paths:
-#                shop: true
-#                product_id: true
 
 custom:
   customDomain:
     domainName: ${self:provider.stage}-${self:service}.${env:DOMAIN_NAME}
     stage: ${self:provider.stage}
     endpointType: regional
+  apiGatewayCaching:
+    enabled: true
+    clusterSize: 0.5  # GB
+    ttlInSeconds: 60
