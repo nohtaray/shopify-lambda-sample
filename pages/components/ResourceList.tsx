@@ -8,6 +8,7 @@ import {
   Thumbnail,
 } from "@shopify/polaris";
 import store from "store-js";
+import * as React from "react";
 
 const GET_PRODUCTS_BY_ID = gql`
   query getProducts($ids: [ID!]!) {
@@ -44,7 +45,9 @@ class ResourceListWithProducts extends React.Component {
 
     return (
       <Query query={GET_PRODUCTS_BY_ID} variables={{ ids: store.get("ids") }}>
-        {({ data, loading, error }) => {
+        {(result: any) => {
+          // https://github.com/apollographql/react-apollo/issues/3854
+          const { data, loading, error } = result;
           if (loading) return <div>Loading…</div>;
           if (error) return <div>{error.message}</div>;
           console.log(data);
@@ -74,6 +77,7 @@ class ResourceListWithProducts extends React.Component {
                     <ResourceList.Item
                       id={item.id}
                       media={media}
+                      onClick={() => {}}
                       accessibilityLabel={`View details for ${item.title}`}
                     >
                       <Stack>
