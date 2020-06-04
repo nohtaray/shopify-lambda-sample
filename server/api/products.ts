@@ -6,13 +6,9 @@ const AWS = XRayWrapper(require("aws-sdk"));
 const dynamo = new AWS.DynamoDB.DocumentClient({
   region: "us-east-1",
 });
-import koa from "koa";
+import Koa from "koa";
 
-/**
- * @param {koa.Context} ctx
- * @param {String} shop
- */
-export const getProducts = (ctx, shop) => {
+export const getProducts = (ctx: Koa.Context, shop: string) => {
   return new Promise((resolve, reject) => {
     const queryParams = {
       TableName: "pre_order_products",
@@ -36,12 +32,11 @@ export const getProducts = (ctx, shop) => {
   });
 };
 
-/**
- * @param {koa.Context} ctx
- * @param {String} shop
- * @param {Integer} productId
- */
-export const putProduct = async (ctx, shop, productId) => {
+export const putProduct = async (
+  ctx: Koa.Context,
+  shop: string,
+  productId: number
+) => {
   return new Promise((resolve, reject) => {
     const now = Math.floor(Date.now() / 1000);
     const putParams = {
@@ -63,12 +58,11 @@ export const putProduct = async (ctx, shop, productId) => {
   });
 };
 
-/**
- * @param {koa.Context} ctx
- * @param {String} shop
- * @param {Integer} productId
- */
-export const deleteProduct = async (ctx, shop, productId) => {
+export const deleteProduct = async (
+  ctx: Koa.Context,
+  shop: string,
+  productId: number
+) => {
   return new Promise((resolve, reject) => {
     const deleteParams = {
       TableName: "pre_order_products",

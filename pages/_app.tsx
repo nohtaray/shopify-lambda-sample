@@ -18,8 +18,7 @@ const client = new ApolloClient({
 
 class MyApp extends App {
   render() {
-    // TODO:
-    const { Component, pageProps } = (this as any).props;
+    const { Component, pageProps } = this.props;
     const shopOrigin = Cookies.get("shopOrigin") || "error";
     return (
       <Container>
